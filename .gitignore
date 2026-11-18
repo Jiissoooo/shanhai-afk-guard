@@ -1,0 +1,33 @@
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+build/lib/
+dist/
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ── 运行时产物 ────────────────────────────────────────────────────────────
+# 每台机器的窗口/进程名都不一样，个人配置不进仓库
+config/targets.json
+config/*.tmp
+config/selftest.json
+artifacts/*.reg
+artifacts/sac_disable_log.txt
+*.tmp
+
+# ── 本地调试截图（保留 README 引用的两张）─────────────────────────────────
+artifacts/*.log
+artifacts/*_raw.png
+
+# ── 编辑器 / 系统 ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store

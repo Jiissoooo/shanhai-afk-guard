@@ -1,0 +1,14 @@
+# 山海寻灵 · 防AFK控制器 —— 运行依赖
+#
+# 本程序**零第三方依赖**：全部 Win32 调用走 Python 标准库 ctypes，
+# 界面用标准库 tkinter，托盘用原生 Shell_NotifyIcon。
+# 这份文件存在只是为了两条可选路径，两者都**不是运行必需**：
+#
+#   1. 打包成 exe        -> pip install -r requirements.txt
+#   2. 重新生成托盘图标   -> 需要 Pillow
+#
+# 直接双击 启动.bat 或 启动.vbs 不需要安装任何东西。
+
+# 仅打包 / 生成图标时使用：
+# pyinstaller>=6.0
+# Pillow>=10.0

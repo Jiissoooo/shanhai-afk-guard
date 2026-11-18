@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "name": "示例任务（改成你的程序）",
+      "title_sub": "",
+      "exe_sub": "YourGame.exe",
+      "key": "space",
+      "interval_sec": 5.0,
+      "jitter_pct": 5.0,
+      "hold_ms": 40,
+      "method": "both",
+      "enabled": false,
+      "auto_discover": true,
+      "max_instances": 16,
+      "hotkey": ""
+    }
+  ]
+}
