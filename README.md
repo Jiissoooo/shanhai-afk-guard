@@ -279,6 +279,7 @@ shanhai-afk-guard/
 ├── scripts/
 │   ├── find_python.bat  解释器查找（排除商店占位程序）
 │   ├── build.bat        PyInstaller 打包
+│   ├── upload_repo.py   发布到 GitHub（curl 客户端 + 重试）
 │   └── app.manifest     UAC manifest（highestAvailable）
 ├── docs/详细手册.md      完整版使用手册（含所有细节与实测记录）
 ├── tests/               16 组自动化验证

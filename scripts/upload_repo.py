@@ -31,7 +31,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {"__pycache__", ".git", "dist", ".venv", "venv", "node_modules"}
 SKIP_REL = {"config/targets.json", "artifacts/sac_disable_log.txt"}
 SKIP_EXT = {".pyc", ".pyo", ".tmp", ".log", ".reg"}
-SAMPLE_EXE = os.path.join("build", "山海寻灵防AFK.exe")
+SAMPLE_EXE = "build/山海寻灵防AFK.exe"
 
 # 已经通过 Contents API 单独管理的老文件（首次发布时要先建 commit 才能用 contents API，
 # 所以第一版统一走 git tree，这里不特殊处理）
@@ -152,12 +152,9 @@ def collect() -> list[dict]:
                 continue
             if os.path.splitext(name)[1].lower() in SKIP_EXT:
                 continue
-            if rel == SAMPLE_EXE:
-                # 本地调试时 csc 只编了个 8 KB 的空壳（hello-world 级别），
-                # 不是真正能用的启动器，别当正式产物发出去。要发布请用
-                # dist\ 下 PyInstaller 的真实构建，或自己 csc 编译后放 dist/。
-                print(f"  [SKIP] {rel} —— 本地调试产物，不上传")
-                continue
+            # build/ 下的 exe 是 csc 编译的原生启动器（8 KB .NET 程序集，
+            # 源码 launcher/Launcher.cs），直接可用，要发布。
+            # dist/ 下的 PyInstaller 大产物才排除。
             with open(full, "rb") as fh:
                 data = fh.read()
             files.append({"path": rel, "data": data, "size": len(data),
