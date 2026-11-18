@@ -11,7 +11,9 @@ env/
 # ── 构建产物 ──────────────────────────────────────────────────────────────
 # build/ 里放的是 csc 编译出来的原生启动器（源码在 launcher/Launcher.cs，
 # 8 KB 左右的 .NET 程序集）。它体积小、可直接双击用，因此**保留进仓库**。
-# dist/ 是 PyInstaller 的一次性大产物（几十 MB），只进 Releases，不进仓库。
+# build/<name>/ 是 PyInstaller 的中间工作目录（toc/pyz/pkg，上 MB），
+# 可随时重建，不进仓库。
+build/*/
 dist/
 *.spec
 
