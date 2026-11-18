@@ -14,6 +14,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from . import elevate as ELEV
+from . import paths as PATHS
 from . import tray as TRAY
 from . import winapi as W
 from .engine import Engine, Target
@@ -793,8 +794,8 @@ class App:
 
     def _init_tray(self):
         """创建托盘图标并绑定回调。"""
-        icon = os.path.join(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))), "assets", "tray.ico")
+        # 打包后 assets 在 _MEIPASS 里，源码运行时在项目根，paths 模块负责区分
+        icon = PATHS.resource_path("assets", "tray.ico")
         self.tray = TRAY.TrayIcon(
             "山海寻灵 · 防AFK控制器", icon,
             {
@@ -838,8 +839,9 @@ class App:
 
 def run():
     root = tk.Tk()
-    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    cfg = os.path.join(here, "config", "targets.json")
+    # config 必须落在 exe 所在目录（打包后 _MEIPASS 是临时解压目录，
+    # 写进去进程退出就丢），paths.app_path 负责这个区分。
+    cfg = PATHS.app_path("config", "targets.json")
     eng = Engine(cfg)
     app = App(root, eng)
     root.mainloop()

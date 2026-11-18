@@ -31,10 +31,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {"__pycache__", ".git", "dist", ".venv", "venv", "node_modules"}
 SKIP_REL = {"config/targets.json", "artifacts/sac_disable_log.txt"}
 SKIP_EXT = {".pyc", ".pyo", ".tmp", ".log", ".reg"}
-SAMPLE_EXE = "build/山海寻灵防AFK.exe"
+# build/ 下只保留 csc 编译好的原生启动器（8 KB，直接可用）。
+# 其余 build/ShanhaiAFK/ 是 PyInstaller 的中间工作目录（toc/pyz/pkg，上 MB），
+# 属于可再生成的编译缓存，绝不进仓库。
+KEEP_IN_BUILD = {"build/山海寻灵防AFK.exe"}
 
-# 已经通过 Contents API 单独管理的老文件（首次发布时要先建 commit 才能用 contents API，
-# 所以第一版统一走 git tree，这里不特殊处理）
 BINARY_EXT = {".exe", ".ico", ".png", ".jpg", ".zip"}
 
 
@@ -151,6 +152,9 @@ def collect() -> list[dict]:
             if rel in SKIP_REL:
                 continue
             if os.path.splitext(name)[1].lower() in SKIP_EXT:
+                continue
+            # build/ 白名单：PyInstaller 的中间目录不进仓库
+            if rel.startswith("build/") and rel not in KEEP_IN_BUILD:
                 continue
             # build/ 下的 exe 是 csc 编译的原生启动器（8 KB .NET 程序集，
             # 源码 launcher/Launcher.cs），直接可用，要发布。

@@ -30,11 +30,27 @@
 
 ## 快速开始
 
+### 方式 A：直接用打包好的 exe（推荐，无需装 Python）
+
+**[⬇ 下载 ShanhaiAFK.exe](https://github.com/Jiissoooo/shanhai-afk-guard/releases/latest/download/ShanhaiAFK.exe)** · 10.3 MB · 单文件绿色版
+
+1. 下载到任意目录（建议单独建个文件夹，配置会生成在旁边）
+2. **右键 exe → 属性 → 勾选「解除锁定」→ 确定**（从网络下载的文件必须做这一步）
+3. 双击运行，UAC 弹窗点「是」
+4. 点「＋新建任务」→ 下拉框选你的程序 → 填按键和间隔 → 点「▶ 启动 (F9)」
+
+> 首次运行会在 exe 同目录生成 `config\targets.json`，这就是你的配置。
+> 卸载 = 删掉整个文件夹，不写注册表、不装服务。
+
+**SHA-256**：`7047d0e4987b72852a310349e14c176321e65501c42a4027dca6c77058ed3de2`
+校验：`certutil -hashfile ShanhaiAFK.exe SHA256`
+
+### 方式 B：从源码跑
+
 1. 装 [Python 3.10+](https://www.python.org/downloads/windows/)，安装时勾选 **Add python.exe to PATH**
 2. 下载本仓库（`Code → Download ZIP` 解压，或 `git clone`）
 3. **双击 `启动.bat`**，在 UAC 弹窗点「是」
 4. 右上角出现 `🔓 管理员` 就是对的
-5. 点「＋新建任务」→ 下拉框选你的程序 → 填按键和间隔 → 点「▶ 启动 (F9)」
 
 > `启动.bat` 会自动检查权限、自动弹 UAC、自动定位 Python（会跳过微软商店那个 0 字节占位程序）。
 > 找不到 Python 时会明确告诉你怎么办，不会闪退。
@@ -43,11 +59,46 @@
 
 | 文件 | 用途 |
 |---|---|
-| `启动.bat` | **推荐**。自动提权 + 自动找 Python，有控制台窗口便于看日志 |
-| `启动.vbs` | 完全无黑框。用 `pythonw.exe` 拉起界面，适合长期挂 |
+| `ShanhaiAFK.exe` | **推荐**。单文件打包版，内含 Python 运行时，无需安装任何东西 |
+| `启动.bat` | 源码启动。自动提权 + 自动找 Python，有控制台窗口便于看日志 |
+| `启动.vbs` | 源码启动，完全无黑框。用 `pythonw.exe` 拉起界面，适合长期挂 |
 | `run_admin.bat` | 手动提权（依赖 PATH 里的 python） |
 | `run.bat` | 不提权启动，仅用于测试普通权限目标 |
 | `python main.py` | 自己保证是管理员的前提下直接跑 |
+
+---
+
+## 系统拦截怎么办（未签名 exe 必读）
+
+本 exe **没有代码签名证书**。Windows 上有三道拦截，按下面的顺序处理：
+
+| 现象 | 原因 | 处理 |
+|---|---|---|
+| 双击没反应 / 弹出「Windows 已保护你的电脑」 | SmartScreen 对未知发布者的提示 | 点「更多信息」→「仍要运行」 |
+| 提示「**此应用的一部分已被阻止**」或 `An Application Control policy has blocked this file` | **智能应用控制 (Smart App Control)** 或 WDAC 策略在拦 | 见下 |
+| 杀软报毒 | PyInstaller 打包的 Python exe 常被启发式误报 | 加白名单，或用方式 B 从源码跑 |
+
+**智能应用控制（Smart App Control）** 是 Win11 22H2 起的新功能，会拦掉所有没有信誉签名的可执行文件。查看状态：
+
+```powershell
+(Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy').VerifiedAndReputablePolicyState
+# 0 = 关闭   1 = 强制   2 = 评估
+```
+
+本机实测（2026-11-18）：`VerifiedAndReputablePolicyState = 0` **但** `Win32_DeviceGuard.CodeIntegrityPolicyEnforcementStatus = 2`（WDAC 仍强制），PyInstaller 产出的 exe 被策略 ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}` 拦下。事件日志可查：
+
+```powershell
+Get-WinEvent -LogName 'Microsoft-Windows-CodeIntegrity/Operational' -MaxEvents 5
+```
+
+**三个可选解法**（按推荐度排序）：
+
+1. **从源码跑**（`启动.bat` / `启动.vbs`）—— 完全不碰这道策略，利用已有 Python，最省事
+2. **临时关掉智能应用控制**：Windows 安全中心 → 应用和浏览器控制 → 智能应用控制 → 关闭（**注意：关闭后只能重装系统才能重新开启**）
+3. **自己签名**：自签名证书 + 导入「受信任的根证书颁发机构」，可控但只对本机有效
+
+> ⚠️ **不要**为了跑这个工具去改 `HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy` 里的策略键。
+> 那需要关掉安全启动和代码完整性，代价远大于收益。源码方式 5 秒就能跑起来。
 
 ---
 
@@ -268,6 +319,7 @@ shanhai-afk-guard/
 │   ├── inject.py        PostMessage / SendInput / 闪切前台
 │   ├── integrity.py     完整性级别检测 + UIPI 预判
 │   ├── elevate.py       UAC 提权与权限状态
+│   ├── paths.py         资源/配置路径解析（打包后 _MEIPASS vs exe 目录）
 │   ├── tray.py          系统托盘（原生 Shell_NotifyIcon）
 │   ├── engine.py        调度核心（多实例独立计时 + 权限预检告警）
 │   └── ui.py            tkinter 界面
@@ -288,24 +340,33 @@ shanhai-afk-guard/
 
 ---
 
-## 打包成独立 exe（可选）
+## 自己打包（可选）
 
 ```bat
-pip install pyinstaller
 scripts\build.bat
 ```
 
-产物 `dist\山海寻灵防AFK.exe`，manifest 已声明 `highestAvailable`，双击即自动请求管理员权限。
+产物 `dist\ShanhaiAFK.exe`（~10.3 MB，单文件、无控制台、manifest 已声明 `highestAvailable`）。
+脚本会自动找 Python、按需装 PyInstaller、把 `assets\` 一起打进包里，最后打印产物大小。
 
-另外 [launcher/Launcher.cs](launcher/Launcher.cs) 是一个更轻量的 C# 启动器（约 6 KB），用系统自带的 `csc` 编译，不需要联网也不需要 PyInstaller：
+**打包注意**：PyInstaller 单文件模式运行时会把资源解压到 `%TEMP%\_MEIxxxxxx`（每次启动路径都不同）。
+所以 [`app/paths.py`](app/paths.py) 把「只读资源」和「可写配置」分开：
+
+| 函数 | 返回值 | 用途 |
+|---|---|---|
+| `paths.resource_path()` | 打包后 = `_MEIPASS`；源码 = 项目根 | `assets/tray.ico` 这类只读资源 |
+| `paths.app_path()` | 恒为 **exe 所在目录** | `config/targets.json` 这类必须持久化的数据 |
+
+如果把 config 也放进 `_MEIPASS`，进程一退出配置就丢了 —— 这是单文件打包最常见的坑。
+
+另外 [launcher/Launcher.cs](launcher/Launcher.cs) 是一个更轻量的 C# 启动器（约 6 KB，已编译好的在 `build\` 里），用系统自带的 `csc` 编译，不需要联网也不需要 PyInstaller：
 
 ```bat
 csc /target:winexe /win32manifest:launcher.manifest /out:山海寻灵防AFK.exe Launcher.cs
 ```
 
 它只做三件事：隐藏控制台、自动定位 `pythonw.exe`、用 manifest 声明 `requireAdministrator`。
-
-> **注意**：若系统开启了「智能应用控制 (Smart App Control)」，所有无信誉签名的新编译 exe 都会被拦截（实测连 hello-world 都拦）。这种情况直接用 `启动.vbs` —— 它走 `wscript.exe` + 已有 Python，不受该策略影响。
+优点是体积极小（8 KB vs 10 MB），缺点是**目标机器上必须已经装了 Python**。
 
 ---
 
