@@ -30,22 +30,39 @@
 
 ## 快速开始
 
-### 方式 A：直接用打包好的 exe（推荐，无需装 Python）
+### 方式 A：便携版（**推荐**，无需装 Python，也不会被系统拦）
 
-**[⬇ 下载 ShanhaiAFK.exe](https://github.com/Jiissoooo/shanhai-afk-guard/releases/latest/download/ShanhaiAFK.exe)** · 10.3 MB · 单文件绿色版
+**[⬇ 下载 ShanhaiAFK-portable-v1.0.zip](https://github.com/Jiissoooo/shanhai-afk-guard/releases/latest/download/ShanhaiAFK-portable-v1.0.zip)** · 10.4 MB（解压后 29.4 MB）
+
+1. 解压到任意目录
+2. 双击 **`启动.bat`**，UAC 弹窗点「是」
+3. 点「＋新建任务」→ 下拉框选你的程序 → 填按键和间隔 → 点「▶ 启动 (F9)」
+
+**为什么推荐这个**：包里带的是**已签名的官方 CPython 解释器**（`runtime\pythonw.exe`）+ 纯 `.py` 源码。
+它不创建任何新的无签名 exe，所以在启用了智能应用控制 / WDAC 的机器上**不会被拦**。
+
+### 方式 B：单文件 exe
+
+**[⬇ 下载 ShanhaiAFK.exe](https://github.com/Jiissoooo/shanhai-afk-guard/releases/latest/download/ShanhaiAFK.exe)** · 10.3 MB · 双击即用
 
 1. 下载到任意目录（建议单独建个文件夹，配置会生成在旁边）
-2. **右键 exe → 属性 → 勾选「解除锁定」→ 确定**（从网络下载的文件必须做这一步）
+2. **右键 exe → 属性 → 勾选「解除锁定」→ 确定**
 3. 双击运行，UAC 弹窗点「是」
-4. 点「＋新建任务」→ 下拉框选你的程序 → 填按键和间隔 → 点「▶ 启动 (F9)」
 
-> 首次运行会在 exe 同目录生成 `config\targets.json`，这就是你的配置。
-> 卸载 = 删掉整个文件夹，不写注册表、不装服务。
+> ⚠️ 这个 exe 是 PyInstaller 生成的**新 PE 文件，没有代码签名**。
+> 在启用了智能应用控制 / WDAC 强制模式的机器上会被直接拦掉
+> （`An Application Control policy has blocked this file`）。
+> 遇到这种情况请改用**方式 A** 或**方式 C**。
 
-**SHA-256**：`7047d0e4987b72852a310349e14c176321e65501c42a4027dca6c77058ed3de2`
-校验：`certutil -hashfile ShanhaiAFK.exe SHA256`
+**SHA-256**
+| 文件 | SHA-256 |
+|---|---|
+| `ShanhaiAFK.exe` | `7047d0e4987b72852a310349e14c176321e65501c42a4027dca6c77058ed3de2` |
+| `ShanhaiAFK-portable-v1.0.zip` | `f46f9cec4b48aba9d52ebbcf08bdea90bfcf944c27edd13cb9f1f5aea70e2594` |
 
-### 方式 B：从源码跑
+校验：`certutil -hashfile <文件名> SHA256`
+
+### 方式 C：从源码跑
 
 1. 装 [Python 3.10+](https://www.python.org/downloads/windows/)，安装时勾选 **Add python.exe to PATH**
 2. 下载本仓库（`Code → Download ZIP` 解压，或 `git clone`）
@@ -55,50 +72,90 @@
 > `启动.bat` 会自动检查权限、自动弹 UAC、自动定位 Python（会跳过微软商店那个 0 字节占位程序）。
 > 找不到 Python 时会明确告诉你怎么办，不会闪退。
 
+### 三种方式怎么选
+
+| | 便携版 (A) | 单文件 exe (B) | 源码 (C) |
+|---|---|---|---|
+| 需要装 Python | ❌ 不需要 | ❌ 不需要 | ✅ 需要 |
+| 抗 WDAC / 智能应用控制 | ✅ **不拦** | ❌ 会被拦 | ✅ 不拦 |
+| 解压后文件数 | 1862 个 | 1 个 | 以仓库为准 |
+| 体积 | 10.4 MB（压缩）/ 29.4 MB（解压） | 10.3 MB | ~400 KB |
+| 适合 | **绝大多数人** | 无策略限制的机器 | 想改代码 / 审计 |
+
 ### 其它入口
 
 | 文件 | 用途 |
 |---|---|
-| `ShanhaiAFK.exe` | **推荐**。单文件打包版，内含 Python 运行时，无需安装任何东西 |
-| `启动.bat` | 源码启动。自动提权 + 自动找 Python，有控制台窗口便于看日志 |
-| `启动.vbs` | 源码启动，完全无黑框。用 `pythonw.exe` 拉起界面，适合长期挂 |
+| `启动.bat`（便携版/源码） | **推荐**。自动提权 + 自动找解释器，有控制台窗口便于看日志 |
+| `启动.vbs`（仅源码） | 完全无黑框。用 `pythonw.exe` 拉起界面，适合长期挂 |
 | `run_admin.bat` | 手动提权（依赖 PATH 里的 python） |
 | `run.bat` | 不提权启动，仅用于测试普通权限目标 |
 | `python main.py` | 自己保证是管理员的前提下直接跑 |
 
 ---
 
-## 系统拦截怎么办（未签名 exe 必读）
+## 未签名 exe 被系统拦掉怎么办（实测记录）
 
-本 exe **没有代码签名证书**。Windows 上有三道拦截，按下面的顺序处理：
+`ShanhaiAFK.exe` **没有代码签名证书**。Windows 上有三道拦截：
 
 | 现象 | 原因 | 处理 |
 |---|---|---|
-| 双击没反应 / 弹出「Windows 已保护你的电脑」 | SmartScreen 对未知发布者的提示 | 点「更多信息」→「仍要运行」 |
-| 提示「**此应用的一部分已被阻止**」或 `An Application Control policy has blocked this file` | **智能应用控制 (Smart App Control)** 或 WDAC 策略在拦 | 见下 |
-| 杀软报毒 | PyInstaller 打包的 Python exe 常被启发式误报 | 加白名单，或用方式 B 从源码跑 |
+| 「Windows 已保护你的电脑」 | SmartScreen 对未知发布者的提示 | 点「更多信息」→「仍要运行」 |
+| 「**此应用的一部分已被阻止**」/ `An Application Control policy has blocked this file` | **智能应用控制 (SAC)** 或 **WDAC** 强制模式 | **改用便携版**（见下） |
+| 杀软报毒 | PyInstaller 打包的 Python exe 常被启发式误报 | 加白名单，或用便携版 / 源码 |
 
-**智能应用控制（Smart App Control）** 是 Win11 22H2 起的新功能，会拦掉所有没有信誉签名的可执行文件。查看状态：
+### 实测数据：签名是唯一变量
 
-```powershell
-(Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy').VerifiedAndReputablePolicyState
-# 0 = 关闭   1 = 强制   2 = 评估
+本机（Windows 11，策略 `{0283AC0F-FFF1-49AE-ADA1-8A933130CAD6}`）五组对照：
+
+| 实验 | 结果 |
+|---|---|
+| csc 编译的 8 KB C# 启动器（未签名） | ❌ BLOCKED |
+| hello-world 级 C# exe（3 574 字节，未签名） | ❌ BLOCKED |
+| 自签名证书签名后的 hello.exe | ❌ BLOCKED（策略不认自签根） |
+| PyInstaller **onefile**（10.3 MB） | ❌ BLOCKED |
+| PyInstaller **onedir**（941 文件 / 27 MB） | ❌ BLOCKED |
+| **已签名的 `python.exe` 复制到 `%TEMP%` 改名运行** | ✅ **正常跑** |
+
+最后一行是关键：**策略按 PE 签名判定，不按路径或文件名**。
+
+```
+Get-AuthenticodeSignature python.exe
+  Status  : Valid
+  Signer  : CN="Hangzhou DeepSeek Artificial Intelligence Co., Ltd."
 ```
 
-本机实测（2026-11-18）：`VerifiedAndReputablePolicyState = 0` **但** `Win32_DeviceGuard.CodeIntegrityPolicyEnforcementStatus = 2`（WDAC 仍强制），PyInstaller 产出的 exe 被策略 ID `{0283ac0f-fff1-49ae-ada1-8a933130cad6}` 拦下。事件日志可查：
+所以便携版的做法是：**不造新 exe**，用已经签名的官方解释器 + 纯 `.py` 源码。
+这是绕过拦载的**合法**方式，没有被信任的二进制被修改，也没有篡改系统策略。
+
+查自己的机器是什么状态：
 
 ```powershell
+# Smart App Control
+(Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy').VerifiedAndReputablePolicyState
+#   0 = 关闭   1 = 强制   2 = 评估
+
+# WDAC 强制状态
+(Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard).CodeIntegrityPolicyEnforcementStatus
+#   0 = 未配置   1 = 审计   2 = 强制
+
+# 拦截事件
 Get-WinEvent -LogName 'Microsoft-Windows-CodeIntegrity/Operational' -MaxEvents 5
 ```
 
-**三个可选解法**（按推荐度排序）：
+本机实测：`VerifiedAndReputablePolicyState = 0`（SAC 显示已关闭）**但** WDAC `EnforcementStatus = 2`（仍强制）。
+两条是独立的，只看注册表会误判。
 
-1. **从源码跑**（`启动.bat` / `启动.vbs`）—— 完全不碰这道策略，利用已有 Python，最省事
-2. **临时关掉智能应用控制**：Windows 安全中心 → 应用和浏览器控制 → 智能应用控制 → 关闭（**注意：关闭后只能重装系统才能重新开启**）
-3. **自己签名**：自签名证书 + 导入「受信任的根证书颁发机构」，可控但只对本机有效
+### 处理顺序
 
-> ⚠️ **不要**为了跑这个工具去改 `HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy` 里的策略键。
-> 那需要关掉安全启动和代码完整性，代价远大于收益。源码方式 5 秒就能跑起来。
+1. **直接用便携版**（方式 A）—— 最高优先级，一次解决
+2. **从源码跑**（方式 C）—— 等价，只是要自己装 Python
+3. 杀软误报的话，把程序目录加进排除列表
+4. 关 Smart App Control —— **不推荐**，关闭后只能重装系统才能重新开启
+
+> ⚠️ **不要**为了跑这个工具去改 `HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy` 或关闭安全启动。
+> 那些策略是 Windows 的端侧安全基线（本机还有一条 2026/11/12 下发的
+> `Microsoft Windows Endpoint Security Policy`），动它的代价远大于收益。
 
 ---
 
@@ -331,6 +388,7 @@ shanhai-afk-guard/
 ├── scripts/
 │   ├── find_python.bat  解释器查找（排除商店占位程序）
 │   ├── build.bat        PyInstaller 打包
+│   ├── make_portable.py 生成便携版（已签名解释器 + 源码）
 │   ├── upload_repo.py   发布到 GitHub（curl 客户端 + 重试）
 │   └── app.manifest     UAC manifest（highestAvailable）
 ├── docs/详细手册.md      完整版使用手册（含所有细节与实测记录）
@@ -367,6 +425,29 @@ csc /target:winexe /win32manifest:launcher.manifest /out:山海寻灵防AFK.exe 
 
 它只做三件事：隐藏控制台、自动定位 `pythonw.exe`、用 manifest 声明 `requireAdministrator`。
 优点是体积极小（8 KB vs 10 MB），缺点是**目标机器上必须已经装了 Python**。
+
+### 生成便携版
+
+```bat
+python scripts\make_portable.py
+```
+
+会从本机已安装的 Python 里裁出一个可搬运的运行时（`runtime/`，约 25 MB），配上源码一起放进
+`dist-portable\山海寻灵防AFK-便携版\`，最后自动用包内解释器跑一次 `main.py --check` 验证。
+
+裁剪规则：
+
+| 来源 | 保留 | 丢弃 |
+|---|---|---|
+| 顶层 | `python.exe` `pythonw.exe` `python3*.dll` `vcruntime14*.dll` | `include/` `libs/` `Scripts/` |
+| `DLLs/` | `_ctypes` `_tkinter` `_socket` `select` `unicodedata` 等实际用到的 | `_test*` `libcrypto` `libssl` `sqlite3` `_decimal` 等 |
+| `Lib/` | 白名单 22 个子目录（`ctypes` `json` `tkinter` `collections` …） | `site-packages`(288 MB) `test` `idlelib` `ensurepip` … |
+| `tcl/` | 全部（tkinter 必需，缺了报 `Can't find a usable init.tcl`） | `__pycache__` |
+
+实测：341 MB 的完整运行时 → **29.4 MB / 1862 文件**，自检 6/6 通过。
+
+> 注意 `.bat` 必须用 **GBK** 写（cmd.exe 按 OEM 代码页 936 解析），
+> `make_portable.py` 里已经按扩展名区分了编码 —— `.txt` 用 UTF-8，`.bat` 用 GBK。
 
 ---
 

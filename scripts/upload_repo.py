@@ -28,7 +28,7 @@ API = "https://api.github.com"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 不发布的东西：运行时配置（含个人游戏进程名）、缓存、构建产物
-SKIP_DIRS = {"__pycache__", ".git", "dist", ".venv", "venv", "node_modules"}
+SKIP_DIRS = {"__pycache__", ".git", "dist", "dist-portable", ".venv", "venv", "node_modules"}
 SKIP_REL = {"config/targets.json", "artifacts/sac_disable_log.txt"}
 SKIP_EXT = {".pyc", ".pyo", ".tmp", ".log", ".reg", ".spec"}
 # build/ 下只保留 csc 编译好的原生启动器（8 KB，直接可用）。
